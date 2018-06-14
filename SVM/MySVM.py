@@ -7,7 +7,7 @@ Created on Thu Jun 14 12:50:45 2018
 import numpy as np
 from numpy import linalg
 import cvxopt
-import cvxopt.solvers
+
 import pylab as pl
 # 首先实现生成数据的类
 class GenData(object):
@@ -61,7 +61,7 @@ class SVM(object):
         else :
             return np.exp(-linalg.norm(x-y)**2 / (2 * (p ** 2)))
     
-    def fit(self,X,y,kernel_type = 'liner',p=3):
+    def fit(self,X,y,kernel_type = 'liner',p=3,C = None):
         row,col = np.shape(X)
         K = np.zeros([row,row])
         for i in range (row):
@@ -72,8 +72,19 @@ class SVM(object):
         q = cvxopt.matrix(np.ones(row)*-1)
         A = cvxopt.matrix(y,(1,row))
         b = cvxopt.matrix(0.0)
-        G = cvxopt.matrix(np.diag(np.ones(row) * -1))
-        h = cvxopt.matrix(np.zeros(row))
+        if C is None:
+            G = cvxopt.matrix(np.diag(np.ones(row) * -1))
+            h = cvxopt.matrix(np.zeros(row))
+        else :
+
+            C = float(C)
+            tmp1 = np.diag(np.ones(row) * -1)
+            tmp2 = np.identity(row)
+            G = cvxopt.matrix(np.vstack((tmp1, tmp2)))
+            tmp1 = np.zeros(row)
+            tmp2 = np.ones(row) *C
+            h = cvxopt.matrix(np.hstack((tmp1, tmp2)))
+            
         solution = cvxopt.solvers.qp(P, q, G, h, A, b)
         alafa = np.ravel(solution['x'])
         sv = alafa>1e-5
@@ -121,7 +132,7 @@ class TestAndTrain(object):
         y_test = np.hstack((y1_test, y2_test))
         return X_test, y_test
     
-    def plot_contour(self,X1_train, X2_train, clf):
+    def plot_contour(self,X1_train, X2_train, clf,kernel_type='liner',p=3):
         # 作training sample数据点的图
         pl.plot(X1_train[:,0], X1_train[:,1], "ro")
         pl.plot(X2_train[:,0], X2_train[:,1], "bo")
@@ -129,7 +140,7 @@ class TestAndTrain(object):
         pl.scatter(clf.sv_x[:,0], clf.sv_x[:,1], s=100, c="g")
         X1, X2 = np.meshgrid(np.linspace(-6,6,50), np.linspace(-6,6,50))
         X = np.array([[x1, x2] for x1, x2 in zip(np.ravel(X1), np.ravel(X2))])
-        Z = clf.project(X).reshape(X1.shape)
+        Z = clf.project(X,kernel_type,p).reshape(X1.shape)
         # pl.contour做等值线图
         pl.contour(X1, X2, Z, [0.0], colors='k', linewidths=1, origin='lower')
         pl.contour(X1, X2, Z + 1, [0.0], colors='grey', linewidths=1, origin='lower')
@@ -138,14 +149,14 @@ class TestAndTrain(object):
         pl.axis("tight")
         pl.show()
         
-    def trainSVM (self,X_train,y_train,X_test,y_test,kernel_type = 'liner',p=3):
+    def trainSVM (self,X_train,y_train,X_test,y_test,kernel_type = 'liner',p=3,C=None):
         clf = SVM()
-        clf.fit(X_train, y_train,kernel_type,p)
+        clf.fit(X_train, y_train,kernel_type,p,C = None)
         y_predict = clf.predict(X_test,kernel_type,p)
         correct = np.sum(y_predict == y_test)
         print("%d out of %d predictions correct" % (correct, len(y_predict)))
 
-        self.plot_contour(X_train[y_train==1], X_train[y_train==-1], clf)
+        self.plot_contour(X_train[y_train==1], X_train[y_train==-1], clf,kernel_type,p)
     
         
 if __name__ == "__main__":
@@ -164,7 +175,7 @@ if __name__ == "__main__":
         X1, y1, X2, y2 = gen.gen_lin_separable_overlap_data()
         X_train, y_train = tt.split_train(X1, y1, X2, y2)
         X_test, y_test = tt.split_test(X1, y1, X2, y2)
-        tt.trainSVM(X_train,y_train,X_test,y_test,'polynomial')
+        tt.trainSVM(X_train,y_train,X_test,y_test,'liner',3,0.1)
         
         
     def nonliner_test():
@@ -173,10 +184,10 @@ if __name__ == "__main__":
         X1, y1, X2, y2 = gen.gen_non_lin_separable_data()
         X_train, y_train = tt.split_train(X1, y1, X2, y2)
         X_test, y_test = tt.split_test(X1, y1, X2, y2)
-        tt.trainSVM(X_train,y_train,X_test,y_test,'gaussion',5)
+        tt.trainSVM(X_train,y_train,X_test,y_test,'gaussion',5,0.1)
         
-    nonliner_test()
-        
+    #soft_test()
+    nonliner_test()  
         
         
         
