@@ -1,0 +1,2 @@
+import KNN
+g,l = KNN.createDataSet()
