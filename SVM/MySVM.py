@@ -151,7 +151,7 @@ class TestAndTrain(object):
         
     def trainSVM (self,X_train,y_train,X_test,y_test,kernel_type = 'liner',p=3,C=None):
         clf = SVM()
-        clf.fit(X_train, y_train,kernel_type,p,C = None)
+        clf.fit(X_train, y_train,kernel_type,p,C)
         y_predict = clf.predict(X_test,kernel_type,p)
         correct = np.sum(y_predict == y_test)
         print("%d out of %d predictions correct" % (correct, len(y_predict)))
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         X1, y1, X2, y2 = gen.gen_lin_separable_overlap_data()
         X_train, y_train = tt.split_train(X1, y1, X2, y2)
         X_test, y_test = tt.split_test(X1, y1, X2, y2)
-        tt.trainSVM(X_train,y_train,X_test,y_test,'liner',3,0.1)
+        tt.trainSVM(X_train,y_train,X_test,y_test,'liner',3,0.5)
         
         
     def nonliner_test():
@@ -184,10 +184,10 @@ if __name__ == "__main__":
         X1, y1, X2, y2 = gen.gen_non_lin_separable_data()
         X_train, y_train = tt.split_train(X1, y1, X2, y2)
         X_test, y_test = tt.split_test(X1, y1, X2, y2)
-        tt.trainSVM(X_train,y_train,X_test,y_test,'gaussion',5,0.1)
+        tt.trainSVM(X_train,y_train,X_test,y_test,'gaussion',5)
         
-    #soft_test()
-    nonliner_test()  
+    soft_test()
+    #nonliner_test()  
         
         
         
