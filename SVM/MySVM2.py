@@ -6,7 +6,7 @@ Created on Thu Jun 14 18:57:59 2018
 """
 
 import numpy as np
-from munpy import linalg
+from numpy import linalg
 import cvxopt
 import pylab as pl
 

@@ -185,10 +185,10 @@ if __name__ == "__main__":
         X_train, y_train = tt.split_train(X1, y1, X2, y2)
         X_test, y_test = tt.split_test(X1, y1, X2, y2)
         tt.trainSVM(X_train,y_train,X_test,y_test,'gaussion',5)
-        
+    liner_test()    
     soft_test()
-    #nonliner_test()  
-        
+    nonliner_test()  
+      
         
         
         
